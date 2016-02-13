@@ -1,95 +1,168 @@
 
 #read the input file
 
-print("It's numerical calculus time!!!!!!")
-
-print(" ")
-
-print("Reading input file...")
+print("Calculating transistor counts...")
 
 f=open('input.txt','r')
-rawdata=str(f.read())
+input=str(f.read())
 
-print ("Data loaded.")
+#load the cell information from celldefs.lib
 
-print(" ")
+f=open('celldefs.txt','r')
+celldefs=str(f.read())
+celldefs=celldefs.replace('\n','')
+celldefs=celldefs.split(',')
 
-print ("Determining data channels...")
+#array of the different cells in the library
+cells = []
 
-#load the data channels
+#corresponding array of transistor counts for each cell
+transcounts = []
 
-rawdata=rawdata.split('\n')
+#number of each cell counted in the input file
+cellcounts = []
 
-dchannels=rawdata[0].split('	')
-print(str(len(dchannels))+" channels detected:")
+#cell categorization
+cellcats = []
 
-i=0
-
-while i<=len(dchannels)-1:
-	print("     "+dchannels[i])
-	i=i+1
-
-#sort the data
-#data will be sorted into a 2d grid. 
-#convention:
-#first indexing number is channel
-#second indexing number is data point
-print(" ")
-print("Sorting and converting data...")
-
-#initialize the data array
-i=0
-data = []
-while i<=len(dchannels)-1:
-	data.append(0)
-	data[i]=[]
-	j=0
-	while j<=len(rawdata)-1:
-		data[i].append(0)
-		j=j+1
-	i=i+1
-
-#populate the data array
 
 i=1
-j=0
+while i<=len(celldefs)-3:
+	cells.append(celldefs[i])
+	transcounts.append(int(celldefs[i+1]))
+	cellcats.append(celldefs[i+2])
+	i=i+3
 
-while i<=len(rawdata)-2:
-	stage=rawdata[i].split('	')
-	j=0
-	while j<=len(dchannels)-1:
-		data[j][i-1]=stage[j]
-		j=j+1
-
+i=0
+totalcells = 0
+totaltrans = 0
+while i<=len(cells)-1:
+	cellcounts.append(input.count(cells[i]))
+	totalcells = totalcells + cellcounts[i]
+	totaltrans = totaltrans + cellcounts[i]*transcounts[i]
 	i=i+1
 
-#convert data strings to numbers
+#generate nice table elements with uniform width
+i=0
+display_cells = []
+while i<=len(cells)-1:
+	display_cells.append(cells[i])
+	while len(display_cells[i])<=15:
+		display_cells[i] = display_cells[i]+" "
+	i=i+1
+
+i=0
+display_cellcats = []
+while i<=len(cellcats)-1:
+	display_cellcats.append(cellcats[i])
+	while len(display_cellcats[i])<=20:
+		display_cellcats[i] = display_cellcats[i]+" "
+	i=i+1
+
+i=0
+display_transcounts = []
+while i<=len(transcounts)-1:
+	display_transcounts.append(str(transcounts[i]))
+	while len(display_transcounts[i])<=12:
+		display_transcounts[i] = display_transcounts[i]+" "
+	i=i+1
+
+i=0
+display_cellcounts = []
+while i<=len(cellcounts)-1:
+	display_cellcounts.append(str(cellcounts[i]))
+	while len(display_cellcounts[i])<=12:
+		display_cellcounts[i] = display_cellcounts[i]+" "
+	i=i+1
+
+#print the results
+
+print('RESULT TABLE A:')
+print('====================================================================')
+print('|Cell            | Cell category       | Trans/cell  | # In Design |')
+i=0
+while i<=len(cells)-1:
+	if cellcounts[i] > 0:
+		print('|'+display_cells[i]+'|'+display_cellcats[i]+'|'+display_transcounts[i]+'|'+display_cellcounts[i]+'|')
+	i=i+1
+print('====================================================================')
+print(' TOTAL DESIGN CELL COUNT: '+str(totalcells))
+print('====================================================================')
+print(' TOTAL DESIGN TRANSISTOR COUNT: '+str(totaltrans))
+print('====================================================================')
+
+# make a second table, this time by category
+
+# cell categorizations without duplicates
+cellcatdefs = []
+
+# cellcounts for cellcatdefs
+cellcatcounts = []
+
+# transistor counts for cellcatdefs
+celltranscounts = []
+
+i=0
+while i<=len(cells)-1:
+	j=0
+	newcat = 1 #if this stays one, you have a new category of cell
+	while j<=len(cellcatdefs)-1:
+		if cellcats[i]==cellcatdefs[j]:
+			celltranscounts[j]=celltranscounts[j]+cellcounts[i]*transcounts[i]
+			cellcatcounts[j] = cellcatcounts[j]+cellcounts[i]
+			newcat=0
+		j=j+1
+	if newcat == 1:
+			cellcatdefs.append(cellcats[i])
+			celltranscounts.append(cellcounts[i]*transcounts[i])
+			cellcatcounts.append(cellcounts[i])
+	i=i+1
 
 
-j=0
+#make nice uniform-width elements for table B
 
-while j<=len(dchannels)-1:
-	i=0
-	while i<=len(data[0])-3:
-		broken = data[j][i].split('e')
-		broken = float(broken[0])*pow(10,int(broken[1]))
-		data[j][i]=broken
-		i=i+1
-	j=j+1
+i=0
+display_cellcatdefs = []
+while i<=len(cellcatdefs)-1:
+	display_cellcatdefs.append(cellcatdefs[i])
+	while len(display_cellcatdefs[i])<=20:
+		display_cellcatdefs[i] = display_cellcatdefs[i]+" "
+	i=i+1
 
-print("Data ready.")
+i=0
+display_celltranscounts = []
+while i<=len(cellcatdefs)-1:
+	display_celltranscounts.append(str(celltranscounts[i]))
+	while len(display_celltranscounts[i])<=18:
+		display_celltranscounts[i] = display_celltranscounts[i]+" "
+	i=i+1
 
-#do the calculation
+i=0
+display_cellcatcounts = []
+while i<=len(cellcatdefs)-1:
+	display_cellcatcounts.append(str(cellcatcounts[i]))
+	while len(display_cellcatcounts[i])<=12:
+		display_cellcatcounts[i] = display_cellcatcounts[i]+" "
+	i=i+1
 
-i=1
-j=1
-while j<=len(dchannels)-1:
-	area = 0
-	i=1
-	while i<len(data[0])-2:
-		area = area + (data[0][i]-data[0][i-1])*(data[j][i]+data[j][i-1])/2
-		i=i+1
-	print("Total area under channel "+dchannels[j]+": ")
-	print(str(area)+" second-volts")
-	j=j+1
 
+#print the second table
+
+print(' ')
+print(' ')
+print(' ')
+print(' ')
+
+print('RESULT TABLE B:')
+print('=========================================================')
+print('| Cell category       | Cell number | Total transistors |')
+i=0
+while i<=len(cellcatdefs)-1:
+	if celltranscounts[i] > 0:
+		print('|'+display_cellcatdefs[i]+'|'+display_cellcatcounts[i]+'|'+display_celltranscounts[i]+'|')
+	i=i+1
+print('=========================================================')
+print(' TOTAL DESIGN CELL COUNT: '+str(totalcells))
+print('=========================================================')
+print(' TOTAL DESIGN TRANSISTOR COUNT: '+str(totaltrans))
+print('=========================================================')
